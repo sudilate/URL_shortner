@@ -1,4 +1,4 @@
-<img width="1253" alt="Screenshot 2024-12-02 at 7 05 43 PM" src="https://github.com/user-attachments/assets/18c4f4c0-305c-4a49-a580-b8aec37cd613"># URL_shortner
+# URL_shortner
 An URL shortening tool which takes long url's and convert it to the short url with localhost as the base URL.
 
 **Execution steps**:
@@ -22,7 +22,8 @@ An URL shortening tool which takes long url's and convert it to the short url wi
   "visit_count": 3
 }
 
-Sample execution:
+**Sample execution:**
+
 1.<img width="1253" alt="Screenshot 2024-12-02 at 7 05 43 PM" src="https://github.com/user-attachments/assets/01fb239b-c725-4263-98a1-4cd96663ea9e">
 
 
