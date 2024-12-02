@@ -34,10 +34,14 @@ An URL shortening tool which takes long url's and convert it to the short url wi
 
 **Postman(GUI)- **
 
-i. Create a new request:
+i. Create a new request.
+
 ii. Set the method to POST.
+
 iii. Enter the URL: http://localhost:5000/shorten.
+
 iv. Go to the Body tab, select raw, and choose JSON format.
+
 v. Paste your JSON payload:
 
 {"url": "https://example.com/some/long/url"}
