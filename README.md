@@ -30,19 +30,19 @@ An URL shortening tool which takes long url's and convert it to the short url wi
   "visit_count": 3
 }
 
-Alternative Tool to test:
+**Alternative Tool to test:**
 
-Postman(GUI)- 
+**Postman(GUI)- **
 
-Create a new request:
-Set the method to POST.
-Enter the URL: http://localhost:5000/shorten.
-Go to the Body tab, select raw, and choose JSON format.
-Paste your JSON payload:
+i. Create a new request:
+ii. Set the method to POST.
+iii. Enter the URL: http://localhost:5000/shorten.
+iv. Go to the Body tab, select raw, and choose JSON format.
+v. Paste your JSON payload:
 
 {"url": "https://example.com/some/long/url"}
 
-Click Send. You’ll see the response in the Postman interface.
+vi. Click Send. You’ll see the response in the Postman interface.
 
 
 **Sample execution:**
