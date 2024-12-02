@@ -22,12 +22,15 @@ An URL shortening tool which takes long url's and convert it to the short url wi
   "visit_count": 3
 }
 
-ScreenShots of execution:
-<img width="1253" alt="Screenshot 2024-12-02 at 7 05 43 PM" src="https://github.com/user-attachments/assets/01fb239b-c725-4263-98a1-4cd96663ea9e">
+Sample execution:
+1.<img width="1253" alt="Screenshot 2024-12-02 at 7 05 43 PM" src="https://github.com/user-attachments/assets/01fb239b-c725-4263-98a1-4cd96663ea9e">
 
-<img width="701" alt="Screenshot 2024-12-02 at 7 06 18 PM" src="https://github.com/user-attachments/assets/7585f656-cba4-47bc-a409-e2628e612570">
 
-<img width="1262" alt="Screenshot 2024-12-02 at 7 06 45 PM" src="https://github.com/user-attachments/assets/07d8a6f4-d75a-4b62-a431-04fbc515a978">
-<img width="685" alt="Screenshot 2024-12-02 at 7 07 08 PM" src="https://github.com/user-attachments/assets/9ae25648-63a3-418b-8f29-39fcfa454dea">
+2.<img width="701" alt="Screenshot 2024-12-02 at 7 06 18 PM" src="https://github.com/user-attachments/assets/7585f656-cba4-47bc-a409-e2628e612570">
+
+
+3.<img width="1262" alt="Screenshot 2024-12-02 at 7 06 45 PM" src="https://github.com/user-attachments/assets/07d8a6f4-d75a-4b62-a431-04fbc515a978">
+
+4.<img width="685" alt="Screenshot 2024-12-02 at 7 07 08 PM" src="https://github.com/user-attachments/assets/9ae25648-63a3-418b-8f29-39fcfa454dea">
 
 
