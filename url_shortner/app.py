@@ -1,7 +1,7 @@
 import string
-import random
 import sqlite3
 import logging
+import secrets
 from flask import Flask, request, redirect, jsonify
 from urllib.parse import urlparse
 
@@ -17,7 +17,6 @@ class URLShortener:
         self._init_database()
     
     def _init_database(self):
-        
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
@@ -36,18 +35,37 @@ class URLShortener:
             raise
     
     def _generate_short_key(self, length=6):
-        characters = string.ascii_letters + string.digits
-        max_attempts = 10
+        characters = (string.ascii_lowercase + string.ascii_uppercase + string.digits)
         
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.cursor()
+                cursor.execute('SELECT COUNT(*) FROM urls')
+                existing_keys_count = cursor.fetchone()[0]
+        except Exception as e:
+            logger.error(f"Error counting existing keys: {e}")
+            existing_keys_count = 0
+        
+        
+        total_possible_combinations = len(characters) ** length
+        remaining_key_space = total_possible_combinations - existing_keys_count
+        
+        logger.info(f"Total Possible Combinations: {total_possible_combinations:,}")
+        logger.info(f"Existing Keys in the database: {existing_keys_count:,}")
+        logger.info(f"Remaining Key Space: {remaining_key_space:,}")
+
+        max_attempts = 5
         for _ in range(max_attempts):
-            short_key = ''.join(random.choice(characters) for _ in range(length))
+            short_key = ''.join(secrets.choice(characters) for _ in range(length))
+            
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
                 cursor.execute('SELECT 1 FROM urls WHERE short_key = ?', (short_key,))
                 if not cursor.fetchone():
                     return short_key
         
-        raise ValueError("Could not generate a unique short key")
+        raise ValueError("Unable to generate a unique short key")
+            
     
     def shorten_url(self, long_url):
         logger.info(f"Attempting to shorten URL: {long_url}")
@@ -106,7 +124,6 @@ class URLShortener:
             logger.error(f"Error retrieving URL: {e}")
             raise
 
-
 app = Flask(__name__)
 url_shortener = URLShortener()
 
@@ -128,9 +145,6 @@ def shorten():
 
 @app.route('/<short_key>', methods=['GET'])
 def redirect_to_url(short_key):
-    """
-    Redirect short URL to original long URL with cache control.
-    """
     logger.info(f"Redirect request for short key: {short_key}")
     try:
         original_url, visit_count = url_shortener.get_original_url(short_key)
@@ -143,8 +157,6 @@ def redirect_to_url(short_key):
     except ValueError:
         logger.warning(f"Short key not found: {short_key}")
         return jsonify({"error": "URL not found"}), 404
-
-
 
 @app.route('/stats/<short_key>', methods=['GET'])
 def get_url_stats(short_key):
@@ -173,4 +185,3 @@ def get_url_stats(short_key):
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
-
