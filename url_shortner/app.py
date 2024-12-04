@@ -1,13 +1,11 @@
-import string
+import hashlib
 import sqlite3
 import logging
-import secrets
 from flask import Flask, request, redirect, jsonify
 from urllib.parse import urlparse
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG, 
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 class URLShortener:
@@ -34,69 +32,62 @@ class URLShortener:
             logger.error(f"Database initialization error: {e}")
             raise
     
-    def _generate_short_key(self, length=6):
-        characters = (string.ascii_lowercase + string.ascii_uppercase + string.digits)
+    def _generate_short_key(self, long_url, length=6):
         
+        hash_object = hashlib.sha256(long_url.encode())
+        short_key = hash_object.hexdigest()[:length]
+
         try:
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                cursor.execute('SELECT COUNT(*) FROM urls')
-                existing_keys_count = cursor.fetchone()[0]
-        except Exception as e:
-            logger.error(f"Error counting existing keys: {e}")
-            existing_keys_count = 0
-        
-        
-        total_possible_combinations = len(characters) ** length
-        remaining_key_space = total_possible_combinations - existing_keys_count
-        
-        logger.info(f"Total Possible Combinations: {total_possible_combinations:,}")
-        logger.info(f"Existing Keys in the database: {existing_keys_count:,}")
-        logger.info(f"Remaining Key Space: {remaining_key_space:,}")
+                for i in range(3):  
+                    cursor.execute('SELECT 1 FROM urls WHERE short_key = ?', (short_key,))
+                    if not cursor.fetchone():
+                        return short_key  
+                    
+                    short_key = hash_object.hexdigest()[:length + i + 1]
 
-        max_attempts = 5
-        for _ in range(max_attempts):
-            short_key = ''.join(secrets.choice(characters) for _ in range(length))
-            
-            with sqlite3.connect(self.db_path) as conn:
-                cursor = conn.cursor()
-                cursor.execute('SELECT 1 FROM urls WHERE short_key = ?', (short_key,))
-                if not cursor.fetchone():
-                    return short_key
+        except Exception as e:
+            logger.error(f"Error checking short key uniqueness: {e}")
+            raise
         
         raise ValueError("Unable to generate a unique short key")
-            
     
     def shorten_url(self, long_url):
         logger.info(f"Attempting to shorten URL: {long_url}")
         
-        try:
-            result = urlparse(long_url)
-            if not all([result.scheme, result.netloc]):
-                logger.error(f"Invalid URL format: {long_url}")
-                raise ValueError("Invalid URL format")
-        except Exception as e:
-            logger.error(f"URL validation error: {e}")
+        result = urlparse(long_url)
+        if not all([result.scheme, result.netloc]):
+            logger.error(f"Invalid URL format: {long_url}")
             raise ValueError("Invalid URL format")
         
-        short_key = self._generate_short_key()
-        
         try:
+            
             with sqlite3.connect(self.db_path) as conn:
                 cursor = conn.cursor()
-                cursor.execute(
-                    'INSERT INTO urls (short_key, long_url) VALUES (?, ?)', 
-                    (short_key, long_url)
-                )
-                conn.commit()
-            
+                cursor.execute('SELECT short_key FROM urls WHERE long_url = ?', (long_url,))
+                result = cursor.fetchone()
+                if result:
+                    short_key = result[0]
+                    short_url = f"{self.base_url}{short_key}"
+                    logger.info(f"Existing short URL found: {short_url}")
+                    return short_url
+        
+        
+            short_key = self._generate_short_key(long_url)
+            cursor.execute(
+                'INSERT INTO urls (short_key, long_url) VALUES (?, ?)',
+                (short_key, long_url)
+            )
+            conn.commit()
+        
             short_url = f"{self.base_url}{short_key}"
             logger.info(f"URL shortened: {long_url} -> {short_url}")
             return short_url
-        
         except Exception as e:
-            logger.error(f"Error storing URL in database: {e}")
+            logger.error(f"Error storing or retrieving URL in database: {e}")
             raise
+
     
     def get_original_url(self, short_key):
         logger.info(f"Looking up short key: {short_key}")
@@ -165,7 +156,7 @@ def get_url_stats(short_key):
         with sqlite3.connect(url_shortener.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
-                'SELECT long_url, visit_count, created_at FROM urls WHERE short_key = ?', 
+                'SELECT long_url, visit_count, created_at FROM urls WHERE short_key = ?',
                 (short_key,)
             )
             result = cursor.fetchone()
